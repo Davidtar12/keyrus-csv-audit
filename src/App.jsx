@@ -1,5 +1,7 @@
 import FileUpload from './components/FileUpload'
 import Papa from 'papaparse'
+import { profileColumns } from './lib/analysis'
+
 
 function App() {
   return (
@@ -13,6 +15,8 @@ complete: (result) => {
     Object.values(fila).some((valor) => valor !== "" && valor !== null)
   );
   console.log("Filas reales:", filas.length);
+    const profiler = profileColumns(filas);
+  console.log("Profiler:", profiler);
 }  })
 }} />
     </div>
