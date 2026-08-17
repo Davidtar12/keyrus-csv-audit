@@ -1,6 +1,7 @@
 import FileUpload from './components/FileUpload'
 import Papa from 'papaparse'
-import { profileColumns } from './lib/analysis'
+import { profileColumns, detectMixedDateFormats } from './lib/analysis'
+
 
 
 function App() {
@@ -17,6 +18,7 @@ complete: (result) => {
   console.log("Filas reales:", filas.length);
     const profiler = profileColumns(filas);
   console.log("Profiler:", profiler);
+const fechas = detectMixedDateFormats(filas);console.log("Fechas:", fechas);
 }  })
 }} />
     </div>
