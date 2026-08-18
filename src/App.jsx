@@ -145,17 +145,19 @@ function App() {
             {loading ? "Generating..." : "Generate executive summary"}
           </button>
 
-          <section className="mt-8">
-            <h2 className="text-xl font-semibold tracking-tight mb-3">What the code found</h2>
-            <p className="text-sm text-muted mb-3">
-              The automated read, before any AI. The executive summary above translates this into plain language.
-            </p>
-            <ul className="space-y-1.5 text-sm text-muted list-disc list-inside">
-              {formatFindingsForLLM(report).split("\n").map((l, i) => (
-                <li key={i} className="leading-relaxed">{l}</li>
-              ))}
-            </ul>
-          </section>
+          {!llmResult && (
+            <section className="mt-8">
+              <h2 className="text-xl font-semibold tracking-tight mb-3">What the code found</h2>
+              <p className="text-sm text-muted mb-3">
+                The automated read, before any AI. Click "Generate executive summary" above for the plain-English version.
+              </p>
+              <ul className="space-y-1.5 text-sm text-muted list-disc list-inside">
+                {formatFindingsForLLM(report).split("\n").map((l, i) => (
+                  <li key={i} className="leading-relaxed">{l}</li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           {llmResult && (
             <div className="mt-8">
@@ -184,6 +186,17 @@ function App() {
                   ))}
                 </ol>
               </section>
+
+              <details className="mt-8 text-sm text-muted">
+                <summary className="cursor-pointer font-medium text-ink">
+                  Technical detail — what the code found
+                </summary>
+                <ul className="space-y-1.5 mt-3 list-disc list-inside">
+                  {formatFindingsForLLM(report).split("\n").map((l, i) => (
+                    <li key={i} className="leading-relaxed">{l}</li>
+                  ))}
+                </ul>
+              </details>
             </div>
           )}
         </>
