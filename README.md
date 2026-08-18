@@ -32,7 +32,7 @@ Open `http://localhost:5173`. That's it — no build step needed for local use.
 The app is provider-agnostic: it speaks the OpenAI-compatible protocol (`POST {base}/chat/completions`), which every major provider exposes. At the top of the page set:
 
 - **API endpoint (Base URL)** — e.g. `https://openrouter.ai/api/v1`, `https://api.anthropic.com/v1`, `https://api.openai.com/v1`, `https://api.groq.com/openai/v1`, or a local Ollama server.
-- **Model** — e.g. `openrouter/free`, `anthropic/claude-sonnet-4.5` (via OpenRouter), `claude-sonnet-4-5` (Anthropic direct), `gpt-4o-mini`, `llama-3.3-70b-versatile`.
+- **Model** — recommended for this task (reliable structured JSON, cheap): `openai/gpt-4o-mini`, `anthropic/claude-haiku-4.5`, `deepseek/deepseek-chat-v3-0324`, `google/gemini-2.5-flash`. Free: `openrouter/free`, `z-ai/glm-5.2:free`. Avoid heavy reasoning models (`*-pro`, `*-reasoning`) — they can spend all output tokens thinking and return empty content (the app now gives them headroom and reports it clearly if it happens). Browse all: [openrouter.ai/models](https://openrouter.ai/models).
 - **API Key** — yours. **Never committed**: the key lives only in React state, never touches disk, never reaches a server you control. A `.gitignore` blocks `.env` files and gitleaks scans every commit as a second layer.
 
 Verified CORS preflights (2026-08-17) — the app runs entirely in the browser, so the provider must allow cross-origin calls. All of these do: OpenRouter, Anthropic (with the official `anthropic-dangerous-direct-browser-access` header, sent automatically), OpenAI, Groq, and Gemini. The exact model you configure is the model that runs — if it fails, the app says why (rate limit, HTTP error, or invalid JSON); it never silently swaps providers.

@@ -1,3 +1,7 @@
+// Reasoning models burn output tokens thinking; give them headroom so the final JSON survives.
+// For non-reasoning models this is just a cap they never reach.
+const MAX_TOKENS = 8192;
+
 async function callModel({ baseUrl, model, apiKey, messages, maxTokens }) {
   const headers = {
     "Content-Type": "application/json",
@@ -56,7 +60,7 @@ export async function summarizeFindings(findings, { baseUrl, model, apiKey }) {
 
   let response;
   try {
-    response = await callModel({ baseUrl, model, apiKey, messages: [system, user], maxTokens: 1200 });
+    response = await callModel({ baseUrl, model, apiKey, messages: [system, user], maxTokens: MAX_TOKENS });
   } catch (err) {
     throw new Error(`Network error calling ${model} on ${baseUrl}: ${err.message}`);
   }
@@ -69,7 +73,16 @@ export async function summarizeFindings(findings, { baseUrl, model, apiKey }) {
   }
 
   const data = await response.json();
-  let parsed = tryExtractJson(data.choices[0].message.content);
+  const content = data.choices?.[0]?.message?.content;
+
+  // Reasoning models can burn all output tokens thinking and return empty content.
+  if (content === undefined || content === null || String(content).trim() === "") {
+    throw new Error(
+      `The model ${model} returned an empty response (common with reasoning models that used all their tokens thinking). Try a non-reasoning model or increase max_tokens.`
+    );
+  }
+
+  let parsed = tryExtractJson(content);
 
   // If the model narrated instead of returning JSON, retry once, strictly.
   if (!parsed) {
@@ -81,11 +94,11 @@ export async function summarizeFindings(findings, { baseUrl, model, apiKey }) {
         { role: "system", content: "You output JSON only. No commentary, no explanation, no markdown." },
         user,
       ],
-      maxTokens: 1200,
+        maxTokens: MAX_TOKENS,
     });
     if (retry.ok) {
       const retryData = await retry.json();
-      parsed = tryExtractJson(retryData.choices[0].message.content);
+      parsed = tryExtractJson(retryData.choices?.[0]?.message?.content);
     }
   }
 
