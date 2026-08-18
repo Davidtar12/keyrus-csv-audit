@@ -1,6 +1,6 @@
 export default function SettingsPanel({ settings, onChange }) {
   const fields = [
-    { key: "baseUrl", label: "Base URL", placeholder: "https://openrouter.ai/api/v1" },
+    { key: "baseUrl", label: "API endpoint (Base URL)", placeholder: "https://openrouter.ai/api/v1" },
     { key: "model", label: "Model", placeholder: "z-ai/glm-5.2:free" },
     { key: "apiKey", label: "API Key", placeholder: "sk-...", type: "password" },
   ];

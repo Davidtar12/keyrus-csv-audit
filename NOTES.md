@@ -6,7 +6,7 @@
 
 ## AI tools used and how
 
-- **Kilo Code (VS Code) with `deepseek/deepseek-v4-flash-0731` as tutor/guide**: guided, step-by-step development. I validated the logic of every check in Python first (Jupyter/pandas) and then translated it 1:1 to browser JS. The agent taught each piece before writing it — it did not paste code blindly.
+- **Kilo Code (VS Code) with `deepseek/deepseek-v4-flash-0731` as tutor/guide**: guided, step-by-step development. I validated the logic of every check in Python first (Jupyter/pandas — notebook `Notebooks/prueba keyrus.ipynb`, where I profiled types, nulls, mixed dates, temporal anomalies, duplicates and outliers against the Lakeside sample) and then translated that logic 1:1 to browser JS. The agent taught each piece before writing it — it did not paste code blindly.
 - **Vision models to get past blockers**: when the text model couldn't read browser screenshots (image input error), I used **Qwen3.8 Max** and **minimax/m3** to interpret UI captures and the network panel. That pattern — screenshot + vision model for visual diagnosis — was key when the app "didn't look right" but the code was fine.
 - **Runtime LLM (OpenRouter)**: exactly one call per analysis. Translates engine findings into business language + 5 kickoff questions. Provider is configurable (base URL + model + key) to work with OpenRouter, Groq, Ollama, or Claude via OpenRouter.
 - **PapaParse**: CSV parsing in the browser. **Tailwind v4**: UI.
@@ -15,7 +15,7 @@
 
 1. **The engine is 100% generic** — no check knows Lakeside's column names. Every detector infers from behavior: date columns (≥80% of values parseable, year 1900–2100), record keys (≥90% unique values), totals (best math formula found in the data). Tested with a second, unrelated CSV: it detected the same kinds of problems without touching the code.
 2. **One-purpose LLM translation** — executive summary in plain language + business consequences + "ask the client" per finding + kickoff questions. That is the assessment the brief asks for, not a chatbot.
-3. **Sober UI** (inspired by the anti-AI-slop "Hallmark" skill): editorial, no gradients, severity colors, left-aligned text.
+3. **Sober UI** — inspired by the anti-AI-slop "Hallmark" design skill ([github.com/Nutlope/hallmark](https://github.com/Nutlope/hallmark)): editorial, no gradients, severity colors, left-aligned text, all user-facing copy in English (the challenge, review and interview are in English).
 
 ## Where the AI got it wrong and how I noticed
 
@@ -41,6 +41,7 @@ Real elapsed time: ~60s, not infinite. Each attempt takes 16–25s because the L
 
 ## What I cut and why
 
+- **Automatic provider fallback chain (removed).** I first built a chain that rotated to other free models when the configured one hit a rate limit (429). I removed it. Why: a fallback model aimed at a foreign endpoint is meaningless — an OpenRouter free model sent to Anthropic's URL is a different protocol entirely — and silently swapping the model is worse than failing loudly. The evaluator should see exactly which model ran and a precise reason when it fails, not magic. Now: one configured model, clear per-code error messages (429, HTTP status, or invalid JSON). Trade-off: less robustness during OpenRouter peak-hour rate limits, better transparency and honesty.
 - **Native Anthropic protocol (`/v1/messages`)**: covered by OpenRouter with a single OpenAI-compatible adapter. A second adapter was ~15 lines the brief doesn't require (it prioritizes free/open models).
 - **LLM column-meaning detector** (interpreting acronyms like `csat_score`): the LLM already does this implicitly when translating findings.
 - **Data correction**: the app is an auditor, not a cleaner. The brief doesn't ask to fix the data, and a consultant must not correct without client authorization.

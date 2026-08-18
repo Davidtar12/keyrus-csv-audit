@@ -16,7 +16,7 @@ The app runs **entirely in the browser**. No backend, no database, no deployment
    - Outliers (IQR)
    - Inconsistent casing / variants of the same value
 3. **Summarize** — one LLM call turns the findings into an executive summary, per-finding consequences with severity, and 5 kickoff questions.
-4. **Present** — a sober, editorial assessment UI (no table dump).
+4. **Present** — a sober, editorial assessment UI (no table dump), inspired by the anti-AI-slop "Hallmark" design system ([github.com/Nutlope/hallmark](https://github.com/Nutlope/hallmark)).
 
 ## Install & run
 
@@ -35,7 +35,7 @@ The app is provider-agnostic (OpenAI-compatible protocol). At the top of the pag
 - **Model** — e.g. `openrouter/free`, `z-ai/glm-5.2:free`, or any paid model on your provider.
 - **API Key** — yours. **Never committed**: the key lives only in React state, never touches disk, never reaches a server you control. A `.gitignore` blocks `.env` files and gitleaks scans every commit as a second layer.
 
-If the configured model is rate-limited (429), the app automatically falls back to other models on the same base URL.
+The key lives only in React state, never touches disk, never reaches a server you control. The exact model you configure is the model that runs — if it fails, the app says why (rate limit, error, or invalid JSON), it never silently swaps providers.
 
 ## Screenshot
 
@@ -43,7 +43,7 @@ If the configured model is rate-limited (429), the app automatically falls back 
 
 ## What doesn't work yet
 
-- Free-tier OpenRouter models are rate-limited during peak hours (the app rotates to alternatives automatically; a key with credits is more reliable).
+- The exact configured model runs; there is no silent provider fallback. Free-tier OpenRouter models are rate-limited during peak hours — a key with credits is more reliable.
 - Native Anthropic protocol (`/v1/messages`) is not implemented — Claude works via OpenRouter's compatible endpoint.
 - Ambiguous date formats (e.g. `04/16/2024` vs `16/04/2024`) are parsed deterministically (US vs EU by separator); when a count depends on that choice the report says so explicitly.
 - The math check picks the best matching formula among numeric columns; if a dataset uses an unusual formula (e.g. quantity × price × discount), rows may show as non-matching. It's reported honestly, not silently fixed.

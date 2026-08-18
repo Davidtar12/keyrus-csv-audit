@@ -79,6 +79,7 @@ function App() {
       alert("Add your API key first (top of page).");
       return;
     }
+    setLoading(true);
     try {
       const text = formatFindingsForLLM(report);
       const result = await summarizeFindings(text, settings);
