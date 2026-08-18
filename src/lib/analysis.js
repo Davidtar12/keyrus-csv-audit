@@ -4,22 +4,22 @@ function parseDateValue(value) {
   const s = String(value).trim();
   if (s === "") return NaN;
 
-  // epoch en segundos (10 dígitos)
+  // epoch in seconds (10 digits)
   if (/^\d{10}$/.test(s)) return parseInt(s, 10) * 1000;
 
-  // ISO: 2025-02-09 o 2025-02-09 04:00:00
+  // ISO: 2025-02-09 or 2025-02-09 04:00:00
   let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
   if (m) return new Date(+m[1], +m[2] - 1, +m[3]).getTime();
 
-  // US: 04/16/2024 (mes/día/año — el default de JS)
+  // US: 04/16/2024 (month/day/year — the JS default)
   m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
   if (m) return new Date(+m[3], +m[1] - 1, +m[2]).getTime();
 
-  // EU: 30-09-2024 (día/mes/año — el de tu CSV)
+  // EU: 30-09-2024 (day/month/year — used in your CSV)
   m = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);
   if (m) return new Date(+m[3], +m[2] - 1, +m[1]).getTime();
 
-  // Mes escrito: "Mar 24, 2024" o "24 Mar 2024"
+  // Month written out: "Mar 24, 2024" or "24 Mar 2024"
   m = s.match(/(\d{1,2})[ ,]*(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[ ,]*(\d{2,4})/i);
   if (m) {
     const meses = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
@@ -146,7 +146,7 @@ export function detectMathInconsistencies(rows) {
         if (b <= a) return;
         const bv = numericValues(rows, b);
 
-        // Opción 1: producto simple a × b
+        // Option 1: simple product a x b
         let match = 0, checked = 0;
         totalVals.forEach((t, i) => {
           if (t === null || av[i] === null || bv[i] === null) return;
@@ -155,7 +155,7 @@ export function detectMathInconsistencies(rows) {
         });
         const scoreSimple = checked > 0 ? match / checked : 0;
 
-        // Opción 2: con descuento a × b × (1 − c)
+        // Option 2: with discount a x b x (1 - c)
         let bestDisc = null;
         const candidatesDisc = factors.filter((c) => c !== a && c !== b);
         candidatesDisc.forEach((c) => {
@@ -219,12 +219,12 @@ export function detectDuplicateRows(rows) {
     }
   });
 
-  // Solo columnas ID casi-únicas califican como llave de fila
+  // Only near-unique ID columns qualify as record keys
   const keyCols = columns.filter((col) => {
     if (!/id$/i.test(col)) return false;
     const vals = rows.map((r) => r[col]).filter((v) => v !== "" && v !== null);
     const unique = new Set(vals).size;
-    return unique / vals.length >= 0.9; // 90%+ únicos -> es una llave de registro
+    return unique / vals.length >= 0.9; // 90%+ unique -> it is a record key
   });
 
   keyCols.forEach((col) => {

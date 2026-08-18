@@ -1,4 +1,4 @@
-// Verificación del motor completo contra el CSV de Lakeside
+// Full engine verification against the Lakeside CSV
 import fs from "fs";
 import Papa from "papaparse";
 import {
@@ -30,7 +30,7 @@ detectMixedDateFormats(rows).forEach((f) =>
 
 console.log("\n[3] Temporal:");
 detectTemporalAnomalies(rows).forEach((f) =>
-  console.log(`  ${f.columnA} vs ${f.columnB}: ${f.count} anomalías, ejemplos ${JSON.stringify(f.examples)}`)
+  console.log(`  ${f.columnA} vs ${f.columnB}: ${f.count} anomalies, examples ${JSON.stringify(f.examples)}`)
 );
 if (detectTemporalAnomalies(rows).length === 0) console.log("  (ninguna)");
 
