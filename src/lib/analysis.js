@@ -19,7 +19,15 @@ function parseDateValue(value) {
   m = s.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);
   if (m) return new Date(+m[3], +m[2] - 1, +m[1]).getTime();
 
-  // Month written out: "Mar 24, 2024" or "24 Mar 2024"
+  // Month first: "Mar 24, 2024" (US style — what the Lakeside data actually uses)
+  m = s.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[ ,]+(\d{1,2})[, ]+(\d{2,4})/i);
+  if (m) {
+    const meses = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+    const mes = meses[m[1].toLowerCase()], dia = +m[2], anio = +m[3];
+    return anio < 100 ? new Date(2000 + anio, mes, dia).getTime() : new Date(anio, mes, dia).getTime();
+  }
+
+  // Day first: "24 Mar 2024"
   m = s.match(/(\d{1,2})[ ,]*(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[ ,]*(\d{2,4})/i);
   if (m) {
     const meses = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
@@ -120,10 +128,14 @@ function numericValues(rows, col) {
   return rows.map((r) => {
     const raw = r[col];
     if (MISSING_MARKERS.includes(raw)) return null;
-    const v = String(raw ?? "").replace(/[$%,]/g, "").trim();
-    if (v === "") return null; // guard: Number("") === 0 in JS, not NaN
+    const s = String(raw ?? "").trim();
+    if (s === "") return null;
+    const isPercent = /%/.test(s);
+    const v = s.replace(/[$%,]/g, "").trim();
+    if (v === "") return null;
     const n = Number(v);
-    return isNaN(n) ? null : n;
+    if (isNaN(n)) return null;
+    return isPercent ? n / 100 : n;
   });
 }
 

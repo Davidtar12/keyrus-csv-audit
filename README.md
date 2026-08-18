@@ -47,6 +47,7 @@ Verified CORS preflights (2026-08-17) — the app runs entirely in the browser, 
 - Claude works both direct (`https://api.anthropic.com/v1` using its OpenAI-compatible endpoint, with the browser-access header sent automatically) and via OpenRouter (`anthropic/claude-...`). The native `/v1/messages` protocol is not implemented — not needed, since the compatible endpoint covers it.
 - Ambiguous date formats (e.g. `04/16/2024` vs `16/04/2024`) are parsed deterministically (US vs EU by separator); when a count depends on that choice the report says so explicitly.
 - The math check picks the best matching formula among numeric columns; if a dataset uses an unusual formula (e.g. a sum rather than a product), rows may show as non-matching. It's reported honestly, not silently fixed.
+- The casing check groups by case-fold, so it catches `US`/`us` but not different spellings of the same value (`US`/`USA`/`U.S.`, `canceled`/`cancelled`). That would need normalization rules or an LLM pass per column; see NOTES.md.
 - A 10-digit numeric column is treated as UNIX epoch seconds when detecting date columns. A column of 10-digit phone numbers or long IDs could be misread as dates if it also falls in a plausible year range. Mitigated by the ≥80% date-like threshold, but not eliminated.
 
 ## Project structure

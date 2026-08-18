@@ -54,6 +54,12 @@ After the app worked end-to-end, I had **Claude Code (Sonnet 5)** audit the publ
 5. **README claimed a second test CSV that wasn't in the repo.** Added `data/test_ventas.csv` and referenced it, so the claim has evidence. (Separate commit `0870c22`.)
 6. **The pandas notebook was referenced but not committed.** Committed `prueba_keyrus.ipynb` and aligned the NOTES/README references. (Commit `0870c22`.)
 7. **Latent epoch risk documented.** A 10-digit numeric column is treated as UNIX epoch seconds; a column of 10-digit phone numbers could be misread as dates. Noted in README "What doesn't work yet" as mitigated-but-not-eliminated.
+8. **Date parser missed month-first names (Bug A).** `parseDateValue` only handled "24 Mar 2024" (day-first), silently dropping "Mar 24, 2024" (month-first) rows from the temporal comparison. Added a month-first pattern before the day-first one. Verified: those rows now parse.
+9. **Percent scale bug (Bug B).** `numericValues` turned "5%" into the number 5, so `(1 - 5) = -4` in the discount math. Fixed with a generic always-true rule: a value containing `%` is divided by 100. After the fix the engine still picks `qty × unit_price` as the best formula for Lakeside — correctly, because those totals genuinely ignore the discount — but the discount scale is now coherent and the remaining mismatch is a real finding, not a parsing artifact.
+
+**Known limitations (deliberately not fixed under deadline):**
+- **Casing check catches case-fold duplicates only.** `detectCasingInconsistencies` groups by `.toLowerCase()`, so it catches `US`/`us` but not different spellings of the same value (`US`/`USA`/`U.S.`/`United States`, `canceled`/`cancelled`, `in store`/`In-Store`). That needs normalization rules or an LLM pass per column — a fuzzy-matching hack tonight would risk false positives on real CSVs.
+- **No fuzzy identity matching (Aisha Johnson).** Detecting "same person, two customer IDs" requires matching across a non-key column (name/email), which produces false positives on any CSV with common names. Named here rather than built under pressure.
 
 The reviewer's own verdict after the fixes: the engine is genuinely generic, the LLM call is solid, and the commit history tells a real story (its earlier "no history" complaint came from a `--depth 1` clone). Score moved from ~7.5 to higher once these landed.
 
