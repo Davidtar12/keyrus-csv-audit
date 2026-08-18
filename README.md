@@ -25,7 +25,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`. That's it — no build step needed for local use.
+Open `http://localhost:5173`. That's it — no build step needed for local use. Requires **Node 20+** (Vite 8 + React 19).
 
 ## Model credentials
 
@@ -57,11 +57,13 @@ Verified CORS preflights (2026-08-17) — the app runs entirely in the browser, 
 ├── NOTES.md
 ├── .gitignore
 ├── package.json
+├── prueba_keyrus.ipynb   # exploratory pandas notebook (validated each check before JS)
 ├── src/
 │   ├── components/      # FileUpload, SettingsPanel
 │   └── lib/             # analysis.js (engine), llm.js (one call)
+├── scripts/             # probe.mjs — CLI engine verification (node scripts/probe.mjs [file.csv])
 ├── skill/               # SKILL.md — reusable CSV data-quality audit skill
-└── data/                # sample CSV (lakeside_orders_sample.csv)
+└── data/                # lakeside_orders_sample.csv + test_ventas.csv (generic test)
 ```
 
 ## The skill
