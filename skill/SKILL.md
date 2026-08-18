@@ -41,6 +41,26 @@ Help a consultant turn an unfamiliar CSV into an honest, non-technical read: wha
 
 For each finding return: **plain** (one line, no jargon, no column names), **consequence** (why it matters for the business), **severity** (`high`/`medium`/`low`), and **needToUnderstand** (what to ask the client to clarify). End with an executive summary (max ~6 lines) and exactly 5 kickoff questions. JSON only.
 
+## Examples
+
+**1. Translation for a non-technical client** — the engine reports a raw finding; the skill turns it into plain language + business consequence + client question.
+
+> Raw: `{ column: "line_total", mismatches: 94, mismatchPct: 8 }`
+>
+> Output:
+> - plain: "The total price doesn't match quantity × unit price in 94 orders."
+> - consequence: "Revenue reports and accounting audits could be wrong."
+> - severity: high
+> - needToUnderstand: "Are these discrepancies from rounding, discounts, or data-entry errors?"
+
+**2. Disguised missing values** — never report only raw empties.
+
+> `csat_score` has 161 missing cells, of which 21 are the literal text `"n/a"` — the report says both numbers and asks the client what the `"n/a"` entries mean.
+
+**3. Ambiguity is a finding, not a bug** — when a count depends on how an ambiguous date is read (is `04/16/2024` April 16 or October 4?), say so and put it to the client instead of silently choosing.
+
+**4. What not to do** — do NOT say "column `ship_dt` has 64 nulls with dtype object" to a manager. Do NOT invent a fix. Do NOT hardcode column names you recognized from a sample file.
+
 ## Install
 
 Place this folder (`skill/`) in the project. In Claude Code / Claude Desktop, reference the skill directory in your config; the frontmatter `name` is how it is invoked. No dependencies beyond a working network connection and an LLM API key.
