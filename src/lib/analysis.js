@@ -305,3 +305,60 @@ export function detectCasingInconsistencies(rows) {
 
   return findings;
 }
+
+export function formatFindingsForLLM(report) {
+  const lines = [];
+  const { rows, findings } = report;
+  lines.push(`The file has ${rows} data rows.`);
+
+  const missingCols = findings.columns.filter((c) => c.missing > 0);
+  if (missingCols.length > 0) {
+    const totalMissing = missingCols.reduce((s, c) => s + c.missing, 0);
+    const worst = [...missingCols].sort((a, b) => b.missing - a.missing)[0];
+    lines.push(
+      `${missingCols.length} of ${findings.columns.length} columns have missing values (${totalMissing} cells total). ` +
+      `Worst affected: "${worst.name}" missing in ${worst.missing} rows.`
+    );
+  }
+
+  findings.dateFormats.forEach((f) => {
+    lines.push(
+      `Column "${f.column}" has ${f.patterns.length} different date formats (e.g. "${f.patterns[0].pattern}" appears ${f.patterns[0].count} times).`
+    );
+  });
+
+  findings.temporal.forEach((f) => {
+    lines.push(
+      `In ${f.count} rows, "${f.columnB}" is earlier than "${f.columnA}" (e.g. shipped before ordered).`
+    );
+  });
+
+  findings.math.forEach((f) => {
+    lines.push(
+      `In ${f.mismatches} rows (${f.mismatchPct}%), "${f.totalColumn}" does not match ${f.bestFormula}.`
+    );
+  });
+
+  const dup = findings.duplicates;
+  if (dup && dup.exact && dup.exact.length > 0) {
+    lines.push(`${dup.exact.length} rows are exact duplicates.`);
+  }
+  if (dup && dup.byKey && dup.byKey.length > 0) {
+    lines.push(`${dup.byKey.length} rows repeat the same record key (e.g. same order id).`);
+  }
+
+  findings.outliers.forEach((f) => {
+    lines.push(
+      `Column "${f.column}" has ${f.count} unusual values (range ${f.min} to ${f.max}).`
+    );
+  });
+
+  findings.casing.forEach((f) => {
+    const total = f.counts.reduce((a, b) => a + b, 0);
+    lines.push(
+      `Column "${f.column}" writes "${f.value}" in ${f.variants.length} different ways across ${total} rows (e.g. ${f.variants.join(", ")}).`
+    );
+  });
+
+  return lines.join("\n");
+}
