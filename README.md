@@ -70,4 +70,4 @@ Verified CORS preflights (2026-08-17) — the app runs entirely in the browser, 
 
 - Commit history shows the work developed feature by feature.
 - The engine was validated against the Lakeside sample in a pandas notebook first (see findings in NOTES.md), then translated 1:1 to JS.
-- Tested with a second, unrelated CSV (test_ventas.csv) to prove the checks are generic.
+- Tested with a second, unrelated CSV (`data/test_ventas.csv`, included in this repo) to prove the checks are generic. The exploratory pandas notebook is `prueba_keyrus.ipynb`.
