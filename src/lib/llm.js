@@ -62,7 +62,7 @@ export async function summarizeFindings(findings, { baseUrl, model, apiKey }) {
   try {
     response = await callModel({ baseUrl, model, apiKey, messages: [system, user], maxTokens: MAX_TOKENS });
   } catch (err) {
-    throw new Error(`Network error calling ${model} on ${baseUrl}: ${err.message}`);
+    throw new Error(`Network error calling ${model} on ${baseUrl}: ${err.message}`, { cause: err });
   }
 
   if (response.status === 429) {

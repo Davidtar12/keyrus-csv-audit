@@ -118,7 +118,10 @@ export function detectTemporalAnomalies(rows) {
 
 function numericValues(rows, col) {
   return rows.map((r) => {
-    const v = String(r[col] ?? "").replace(/[$%,]/g, "").trim();
+    const raw = r[col];
+    if (MISSING_MARKERS.includes(raw)) return null;
+    const v = String(raw ?? "").replace(/[$%,]/g, "").trim();
+    if (v === "") return null; // guard: Number("") === 0 in JS, not NaN
     const n = Number(v);
     return isNaN(n) ? null : n;
   });
@@ -160,7 +163,7 @@ export function detectMathInconsistencies(rows) {
         const candidatesDisc = factors.filter((c) => c !== a && c !== b);
         candidatesDisc.forEach((c) => {
           const cv = numericValues(rows, c);
-          let dm = 0, dc = 0, dSum = 0;
+          let dm = 0, dc = 0;
           totalVals.forEach((t, i) => {
             if (t === null || av[i] === null || bv[i] === null || cv[i] === null) return;
             dc++;
