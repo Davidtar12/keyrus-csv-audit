@@ -6,8 +6,8 @@
 
 ## AI tools used and how
 
-- **Kilo Code (VS Code) with `deepseek/deepseek-v4-flash-0731` as tutor/guide**: guided, step-by-step development. I validated the logic of every check in Python first (Jupyter/pandas — notebook `Notebooks/prueba keyrus.ipynb`, where I profiled types, nulls, mixed dates, temporal anomalies, duplicates and outliers against the Lakeside sample) and then translated that logic 1:1 to browser JS. The agent taught each piece before writing it — it did not paste code blindly.
-- **Vision models to get past blockers**: when the text model couldn't read browser screenshots (image input error), I used **Qwen3.8 Max** and **minimax/m3** to interpret UI captures and the network panel. That pattern — screenshot + vision model for visual diagnosis — was key when the app "didn't look right" but the code was fine.
+- **Kilo Code (VS Code) as tutor/guide**: started on `deepseek/deepseek-v4-flash-0731`; switched to `qwen3.8-max` mid-session when the flash model stalled on the CORS/LLM debugging. Guided, step-by-step development. I validated the logic of every check in Python first (Jupyter/pandas — notebook `Notebooks/prueba keyrus.ipynb`, where I profiled types, nulls, mixed dates, temporal anomalies, duplicates and outliers against the Lakeside sample) and then translated that logic 1:1 to browser JS. The agent taught each piece before writing it — it did not paste code blindly.
+- **Vision models at bottlenecks**: when the text model couldn't read a browser screenshot (image-input error) or the network panel was ambiguous, I switched to **Qwen3.8 Max** / **minimax-m3** (vision) to interpret the capture. Screenshot + vision model was the unlock whenever "the app doesn't look right but the code seems fine".
 - **Runtime LLM (OpenRouter)**: exactly one call per analysis. Translates engine findings into business language + 5 kickoff questions. Provider is configurable (base URL + model + key) to work with OpenRouter, Groq, Ollama, or Claude via OpenRouter.
 - **PapaParse**: CSV parsing in the browser. **Tailwind v4**: UI.
 
@@ -38,6 +38,10 @@ The app seemed stuck on "Generating..." — it wasn't. The HAR export from the b
 | 00:36:39 | 200 | 17.7s | Fallback rotated and the fourth model responded |
 
 Real elapsed time: ~60s, not infinite. Each attempt takes 16–25s because the LLM is slow, not the app — and the 204s are normal CORS preflights (68ms). The provider routing did exactly what it was designed to do.
+
+## Provider support, verified by CORS preflight
+
+The app runs entirely in the browser (the brief forbids a backend), so the LLM provider must allow cross-origin requests. I verified this empirically with `curl -X OPTIONS` preflights (2026-08-17) instead of assuming: OpenRouter, Anthropic, OpenAI, Groq, and Gemini all return `Access-Control-Allow-Origin` for a browser origin. Anthropic additionally requires the official `anthropic-dangerous-direct-browser-access: true` header for direct browser calls — the app sends it automatically when the endpoint is `anthropic.com`. Conclusion: the app is genuinely provider-agnostic across the majors; "only OpenRouter works" would have been a false claim, so I did not ship it.
 
 ## What I cut and why
 

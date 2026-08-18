@@ -1,10 +1,16 @@
 async function callModel({ baseUrl, model, apiKey, messages, maxTokens }) {
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${apiKey}`,
+  };
+  // Anthropic blocks browser CORS by default; this header is the official opt-in for direct browser calls.
+  if (/anthropic\.com/i.test(baseUrl)) {
+    headers["anthropic-dangerous-direct-browser-access"] = "true";
+    headers["anthropic-version"] = "2023-06-01";
+  }
   const response = await fetch(`${baseUrl}/chat/completions`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
+    headers,
     body: JSON.stringify({ model, messages, max_tokens: maxTokens }),
   });
   return response;
@@ -26,15 +32,20 @@ export async function summarizeFindings(findings, { baseUrl, model, apiKey }) {
   const system = {
     role: "system",
     content:
-      "You are a data consultant preparing a client kickoff meeting for a non-technical manager. " +
+      "You are a data consultant writing for a non-technical business manager who has never opened a spreadsheet. " +
+      "RULES: (1) Never use jargon or raw column names. First interpret cryptic names into plain business terms " +
+      "(e.g. 'cust_seg_cd' = customer segment, 'csat_score' = customer satisfaction score, 'disc_pct' = discount) and speak only in those terms. " +
+      "(2) Prefer words over numbers; when you use a number, say in one clause what it means for the business. " +
+      "(3) Never say null, dtype, parse, outlier, normalize, column, or row-count without a plain equivalent. " +
+      "(4) Every finding must end with why the business should care. " +
       "Return ONLY valid JSON with this exact shape: " +
-      '{"executiveSummary": string (plain language, max 6 lines, no jargon, no column names), ' +
+      '{"executiveSummary": string (plain language, max 6 lines), ' +
       '"findings": [{"plain": string (one line, no jargon, no column names), ' +
       '"consequence": string (why it matters for the business), ' +
       '"severity": "high"|"medium"|"low", ' +
       '"needToUnderstand": string (what you would ask the client to clarify)}], ' +
       '"kickoffQuestions": [array of exactly 5 questions for the client]}. ' +
-      "Translate every finding. No markdown, no preamble, no code fences.",
+      "No markdown, no preamble, no code fences.",
   };
   const user = {
     role: "user",

@@ -29,13 +29,13 @@ Open `http://localhost:5173`. That's it — no build step needed for local use.
 
 ## Model credentials
 
-The app is provider-agnostic (OpenAI-compatible protocol). At the top of the page:
+The app is provider-agnostic: it speaks the OpenAI-compatible protocol (`POST {base}/chat/completions`), which every major provider exposes. At the top of the page set:
 
-- **Base URL** — e.g. `https://openrouter.ai/api/v1` (also works with Groq, Ollama, Together, Gemini-compatible endpoints).
-- **Model** — e.g. `openrouter/free`, `z-ai/glm-5.2:free`, or any paid model on your provider.
+- **API endpoint (Base URL)** — e.g. `https://openrouter.ai/api/v1`, `https://api.anthropic.com/v1`, `https://api.openai.com/v1`, `https://api.groq.com/openai/v1`, or a local Ollama server.
+- **Model** — e.g. `openrouter/free`, `anthropic/claude-sonnet-4.5` (via OpenRouter), `claude-sonnet-4-5` (Anthropic direct), `gpt-4o-mini`, `llama-3.3-70b-versatile`.
 - **API Key** — yours. **Never committed**: the key lives only in React state, never touches disk, never reaches a server you control. A `.gitignore` blocks `.env` files and gitleaks scans every commit as a second layer.
 
-The key lives only in React state, never touches disk, never reaches a server you control. The exact model you configure is the model that runs — if it fails, the app says why (rate limit, error, or invalid JSON), it never silently swaps providers.
+Verified CORS preflights (2026-08-17) — the app runs entirely in the browser, so the provider must allow cross-origin calls. All of these do: OpenRouter, Anthropic (with the official `anthropic-dangerous-direct-browser-access` header, sent automatically), OpenAI, Groq, and Gemini. The exact model you configure is the model that runs — if it fails, the app says why (rate limit, HTTP error, or invalid JSON); it never silently swaps providers.
 
 ## Screenshot
 
@@ -44,7 +44,7 @@ The key lives only in React state, never touches disk, never reaches a server yo
 ## What doesn't work yet
 
 - The exact configured model runs; there is no silent provider fallback. Free-tier OpenRouter models are rate-limited during peak hours — a key with credits is more reliable.
-- Native Anthropic protocol (`/v1/messages`) is not implemented — Claude works via OpenRouter's compatible endpoint.
+- Claude works both direct (`https://api.anthropic.com/v1` using its OpenAI-compatible endpoint, with the browser-access header sent automatically) and via OpenRouter (`anthropic/claude-...`). The native `/v1/messages` protocol is not implemented — not needed, since the compatible endpoint covers it.
 - Ambiguous date formats (e.g. `04/16/2024` vs `16/04/2024`) are parsed deterministically (US vs EU by separator); when a count depends on that choice the report says so explicitly.
 - The math check picks the best matching formula among numeric columns; if a dataset uses an unusual formula (e.g. quantity × price × discount), rows may show as non-matching. It's reported honestly, not silently fixed.
 

@@ -18,7 +18,7 @@ Help a consultant turn an unfamiliar CSV into an honest, non-technical read: wha
 
 ## Rules for talking to non-technical clients (the hardest part)
 
-7. **Translate every finding into business language.** No jargon: no *null*, *dtype*, *IQR*, *parse*, *outlier*, *normalize*, *column*. Use what the business cares about: incomplete, duplicated, inconsistent, unaccounted money, impossible dates. The word *duplicate* is fine; *null* is not.
+7. **Translate every finding into business language and interpret cryptic names first.** Before writing, map raw field names to plain terms (`cust_seg_cd` = customer segment, `csat_score` = satisfaction score, `disc_pct` = discount) and speak only in those terms. No jargon: no *null*, *dtype*, *IQR*, *parse*, *outlier*, *normalize*, *column*. Prefer words over numbers; when a number appears, add one clause saying what it means ("about 1 in 12 orders" beats "8%"). The word *duplicate* is fine; *null* is not.
 8. **Say *why it matters*, not just what it is.** "21 duplicated orders" becomes "21 orders appear twice with identical data — this can inflate your sales figures."
 9. **Explicitly call out what you'd need to clarify.** End each finding with the natural next question for the client. Prefer concrete questions grounded in the data over generic templates.
 10. **Never fabricate a number, threshold, or conclusion.** If the analysis is ambiguous, the honest output is the ambiguity, not a confident guess.
@@ -48,10 +48,10 @@ For each finding return: **plain** (one line, no jargon, no column names), **con
 > Raw: `{ column: "line_total", mismatches: 94, mismatchPct: 8 }`
 >
 > Output:
-> - plain: "The total price doesn't match quantity × unit price in 94 orders."
-> - consequence: "Revenue reports and accounting audits could be wrong."
+> - plain: "In about 1 out of every 12 orders, the amount charged doesn't match what you'd get by multiplying the items by their price."
+> - consequence: "Revenue reports and accounting could be wrong, so money figures can't be trusted until this is explained."
 > - severity: high
-> - needToUnderstand: "Are these discrepancies from rounding, discounts, or data-entry errors?"
+> - needToUnderstand: "Are discounts or fees applied somewhere these numbers don't show, or are these entry errors?"
 
 **2. Disguised missing values** — never report only raw empties.
 
