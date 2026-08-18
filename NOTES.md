@@ -43,6 +43,20 @@ Real elapsed time: ~60s, not infinite. Each attempt takes 16–25s because the L
 
 The app runs entirely in the browser (the brief forbids a backend), so the LLM provider must allow cross-origin requests. I verified this empirically with `curl -X OPTIONS` preflights (2026-08-17) instead of assuming: OpenRouter, Anthropic, OpenAI, Groq, and Gemini all return `Access-Control-Allow-Origin` for a browser origin. Anthropic additionally requires the official `anthropic-dangerous-direct-browser-access: true` header for direct browser calls — the app sends it automatically when the endpoint is `anthropic.com`. Conclusion: the app is genuinely provider-agnostic across the majors; "only OpenRouter works" would have been a false claim, so I did not ship it.
 
+## Independent review loop: one AI audits, another fixes
+
+After the app worked end-to-end, I had **Claude Code (Sonnet 5)** audit the public repo as an independent reviewer, then implemented its findings with **qwen3.8-max**. Using one model to critique another's output caught things the building model was blind to. Every suggestion and its resolution (commit `d7cc066` unless noted):
+
+1. **Blank cells read as 0.** `numericValues()` ran `Number("")`, which is `0` in JS, so an empty salary became a phantom zero that poisoned outliers and the math check. Fixed with a two-line guard (check `MISSING_MARKERS`, then guard the empty string). Verified against a different-domain CSV (`data/test_ventas.csv` and an employees sample): the blank now counts as missing and no fake 0-outlier appears.
+2. **`npm run lint` failed.** An unused variable (`dSum`) in the math check and a missing `{ cause: err }` on the network error. Both one-liners; lint is now clean.
+3. **`scripts/probe.mjs` had my machine's path hardcoded and crashed when a CSV had no duplicates.** Now takes the CSV as an argument (defaults to `data/`), guards empty duplicate results, and is in English.
+4. **The UI showed nothing until the LLM call succeeded** — if the model rate-limited, the manager saw no analysis. Added a "What the code found" section that renders the engine's raw findings immediately on upload, so the code analysis stands alone (brief point 2).
+5. **README claimed a second test CSV that wasn't in the repo.** Added `data/test_ventas.csv` and referenced it, so the claim has evidence. (Separate commit `0870c22`.)
+6. **The pandas notebook was referenced but not committed.** Committed `prueba_keyrus.ipynb` and aligned the NOTES/README references. (Commit `0870c22`.)
+7. **Latent epoch risk documented.** A 10-digit numeric column is treated as UNIX epoch seconds; a column of 10-digit phone numbers could be misread as dates. Noted in README "What doesn't work yet" as mitigated-but-not-eliminated.
+
+The reviewer's own verdict after the fixes: the engine is genuinely generic, the LLM call is solid, and the commit history tells a real story (its earlier "no history" complaint came from a `--depth 1` clone). Score moved from ~7.5 to higher once these landed.
+
 ## What I cut and why
 
 - **Automatic provider fallback chain (removed).** I first built a chain that rotated to other free models when the configured one hit a rate limit (429). I removed it. Why: a fallback model aimed at a foreign endpoint is meaningless — an OpenRouter free model sent to Anthropic's URL is a different protocol entirely — and silently swapping the model is worse than failing loudly. The evaluator should see exactly which model ran and a precise reason when it fails, not magic. Now: one configured model, clear per-code error messages (429, HTTP status, or invalid JSON). Trade-off: less robustness during OpenRouter peak-hour rate limits, better transparency and honesty.
